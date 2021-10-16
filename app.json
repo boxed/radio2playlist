@@ -1,0 +1,8 @@
+{
+  "cron": [
+    {
+      "command": "npm run send-email",
+      "schedule": "* * * * *"
+    }
+  ]
+}
