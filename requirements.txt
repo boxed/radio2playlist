@@ -3,3 +3,4 @@ Django
 parso
 httpx
 mysqlclient
+gunicorn
