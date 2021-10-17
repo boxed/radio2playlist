@@ -36,6 +36,7 @@ def scrape():
         station, _ = Station.objects.get_or_create(code=x['stationCode'])
         show, _ = Show.objects.get_or_create(
             name=x['stationOnAir']['episodeTitle'],
+            station=station,
             defaults=dict(
                 description=x['stationOnAir']['episodeDescription'],
             ),
