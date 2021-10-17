@@ -41,8 +41,14 @@ def scrape():
                 description=x['stationOnAir']['episodeDescription'],
             ),
         )
-        artist, _ = Artist.objects.get_or_create(name=x['stationNowPlaying']['nowPlayingArtist'])
-        track, _ = Track.objects.get_or_create(name=x['stationNowPlaying']['nowPlayingTrack'])
+        artist_name = x['stationNowPlaying']['nowPlayingArtist']
+        if not artist_name:
+            continue
+        track_name = x['stationNowPlaying']['nowPlayingTrack']
+        if not track_name:
+            continue
+        artist, _ = Artist.objects.get_or_create(name=artist_name)
+        track, _ = Track.objects.get_or_create(name=track_name)
         playlist, _ = Playlist.objects.get_or_create(show=show, start_time=x['stationOnAir']['episodeStart'])
         playlist_item, _ = PlaylistItem.objects.get_or_create(playlist=playlist, track=track, start_time=x['stationNowPlaying']['nowPlayingTime'])
 

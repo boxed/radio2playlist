@@ -6,7 +6,7 @@
   },
   "cron": [
     {
-      "command": "npm run send-email",
+      "command": "python -m radio2playlist.tasks",
       "schedule": "* * * * *"
     }
   ]
