@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'w*46!8lqb&_l1b^@75jv&qhwpm0ju6h=s&e&9=+@ebvix%7e@b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'radio2playlist.kodare.com',
