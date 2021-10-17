@@ -2,3 +2,4 @@ iommi
 Django
 parso
 httpx
+mysqlclient
