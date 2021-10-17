@@ -52,3 +52,5 @@ results/
 settings_local.py
 
 db.sqlite3
+
+radio2playlist/settings_local.py

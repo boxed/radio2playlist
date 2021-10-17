@@ -138,10 +138,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+ENV = 'prod'
+
 STATIC_URL = '/static/'
 STATIC_ROOT = Path(__file__).parent.parent / 'static/'
 
-import sentry_sdk
-sentry_sdk.init(
-    "https://90cbcaaf156f49e29578062fc252416b@o238340.ingest.sentry.io/6010679",
-)
+try:
+    from .settings_local import *
+except ImportError:
+    pass
+
+if END == 'prod':
+
+    import sentry_sdk
+    sentry_sdk.init(
+        "https://90cbcaaf156f49e29578062fc252416b@o238340.ingest.sentry.io/6010679",
+    )
