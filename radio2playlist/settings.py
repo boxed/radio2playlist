@@ -25,7 +25,11 @@ SECRET_KEY = 'w*46!8lqb&_l1b^@75jv&qhwpm0ju6h=s&e&9=+@ebvix%7e@b'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'radio2playlist.kodare.com',
+    'localhost',
+]
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
