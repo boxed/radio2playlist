@@ -148,7 +148,7 @@ try:
 except ImportError:
     pass
 
-if END == 'prod':
+if ENV == 'prod':
 
     import sentry_sdk
     sentry_sdk.init(
