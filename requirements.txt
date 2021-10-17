@@ -4,3 +4,4 @@ parso
 httpx
 mysqlclient
 gunicorn
+sentry-sdk
