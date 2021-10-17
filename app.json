@@ -1,9 +1,9 @@
 {
-  "scripts": {
-    "dokku": {
-      "predeploy": "make predeploy"
-    }
-  },
+//  "scripts": {
+//    "dokku": {
+//      "predeploy": "make predeploy"
+//    }
+//  },
   "cron": [
     {
       "command": "npm run send-email",
