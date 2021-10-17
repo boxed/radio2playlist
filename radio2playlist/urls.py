@@ -1,4 +1,7 @@
-from django.urls import include
+from django.urls import (
+    include,
+    path,
+)
 from iommi import Table
 from iommi.admin import Admin
 from .path import decoded_path
@@ -19,5 +22,5 @@ urlpatterns = [
         columns__name__cell__url=lambda row, **_: row.get_absolute_url(),
     ).as_view()),
 
-    decoded_path('admin/', include(Admin.urls())),
+    path('admin/', include(Admin.urls())),
 ]
