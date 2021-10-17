@@ -18,7 +18,8 @@ from radio2playlist.models import (
 
 
 def scrape():
-    url = 'https://listenapi.planetradio.co.uk/api9.2/stations_nowplaying/SE?StationCode%5B%5D=rok&premium=1&_o=exactly'
+    station_codes = [x.code for x in Station.objects.all()]
+    url = 'https://listenapi.planetradio.co.uk/api9.2/stations_nowplaying/SE?premium=1&_o=exactly&' + '&'.join([f'StationCode%5B%5D={x}' for x in station_codes])
     data = httpx.get(
         url=url,
         headers={
