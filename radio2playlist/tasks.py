@@ -1,3 +1,8 @@
+from urllib.parse import (
+    quote_plus,
+    urlencode,
+)
+
 import httpx
 
 if __name__ == '__main__':
@@ -15,6 +20,11 @@ from radio2playlist.models import (
     Station,
     Track,
 )
+
+SPOTIFY_CLIENT_ID = '2f7e8eb1b1b84a3a80db398619220e71'
+SPOTIFY_CLIENT_SECRET = '46a9a8d1be0a4efba595675326333d15'
+SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/api/token'
+SPOTIFY_API_URL = 'https://api.spotify.com/v1/'
 
 
 def scrape():
@@ -54,5 +64,32 @@ def scrape():
         playlist_item, _ = PlaylistItem.objects.get_or_create(playlist=playlist, track=track, start_time=x['stationNowPlaying']['nowPlayingTime'])
 
 
+def backfill_spotify_ids():
+    auth_response = httpx.post(SPOTIFY_AUTH_URL, data={
+        'grant_type': 'client_credentials',
+        'client_id': SPOTIFY_CLIENT_ID,
+        'client_secret': SPOTIFY_CLIENT_SECRET,
+    })
+    auth_response_data = auth_response.json()
+    access_token = auth_response_data['access_token']
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+    }
+
+    for track in Track.objects.filter(spotify_uri=None):
+        search_string = f'artist:"{track.artist.name}" track:"{track.name}"'
+        print(search_string)
+        r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(search_string)}', headers=headers)
+        for t in r.json()['tracks']['items']:
+            if t['artists'][0]['name'].lower() != track.artist.name.lower():
+                continue
+            track.spotify_uri = t['uri']
+            track.spotify_url = t['href']
+            track.save()
+            break
+
+
 if __name__ == '__main__':
     scrape()
+    backfill_spotify_ids()

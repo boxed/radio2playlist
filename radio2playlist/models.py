@@ -52,6 +52,8 @@ class Artist(R2PModel):
 class Track(R2PModel):
     name = CharField(max_length=255, db_index=True)
     artist = ForeignKey(Artist, on_delete=RESTRICT, related_name='tracks', null=True)
+    spotify_uri = TextField(default=None, null=True)
+    spotify_url = TextField(default=None, null=True)
 
     def __str__(self):
         return self.name
