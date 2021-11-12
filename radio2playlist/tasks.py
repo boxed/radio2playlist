@@ -21,8 +21,6 @@ from radio2playlist.models import (
     Track,
 )
 
-SPOTIFY_CLIENT_ID = '2f7e8eb1b1b84a3a80db398619220e71'
-SPOTIFY_CLIENT_SECRET = '46a9a8d1be0a4efba595675326333d15'
 SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/api/token'
 SPOTIFY_API_URL = 'https://api.spotify.com/v1/'
 
@@ -77,7 +75,7 @@ def backfill_spotify_ids():
         'Content-Type': 'application/json',
     }
 
-    for track in Track.objects.filter(spotify_uri=None):
+    for track in Track.objects.filter(spotify_uri=None)[:100]:
         search_string = f'artist:"{track.artist.name}" track:"{track.name}"'
         print(search_string)
         r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(search_string)}', headers=headers)
@@ -92,4 +90,4 @@ def backfill_spotify_ids():
 
 if __name__ == '__main__':
     scrape()
-    backfill_spotify_ids()
+    # backfill_spotify_ids()
