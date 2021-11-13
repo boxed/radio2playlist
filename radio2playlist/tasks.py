@@ -65,8 +65,8 @@ def scrape():
 def backfill_spotify_ids():
     auth_response = httpx.post(SPOTIFY_AUTH_URL, data={
         'grant_type': 'client_credentials',
-        'client_id': SPOTIFY_CLIENT_ID,
-        'client_secret': SPOTIFY_CLIENT_SECRET,
+        'client_id': os.environ['DOKKU_SPOTIFY_CLIENT_ID'],
+        'client_secret': os.environ['DOKKU_SPOTIFY_SECRET'],
     })
     auth_response_data = auth_response.json()
     access_token = auth_response_data['access_token']
@@ -90,4 +90,4 @@ def backfill_spotify_ids():
 
 if __name__ == '__main__':
     scrape()
-    # backfill_spotify_ids()
+    backfill_spotify_ids()
