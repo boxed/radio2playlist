@@ -63,6 +63,10 @@ def scrape():
         playlist_item, _ = PlaylistItem.objects.get_or_create(playlist=playlist, track=track, start_time=x['stationNowPlaying']['nowPlayingTime'])
 
 
+def sanitize(name):
+    return name.replace("'", '').replace('´', '')
+
+
 def backfill_spotify_ids():
     auth_response = httpx.post(SPOTIFY_AUTH_URL, data={
         'grant_type': 'client_credentials',
@@ -76,16 +80,25 @@ def backfill_spotify_ids():
         'Content-Type': 'application/json',
     }
 
-    for track in Track.objects.filter(spotify_uri=None)[:100]:
-        search_string = f'artist:"{track.artist.name}" track:"{track.name}"'
-        print(search_string)
+    def search(artist_name, track_name):
+        search_string = f'artist:"{artist_name}" track:"{sanitize(track_name)}"'
         r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(search_string)}', headers=headers)
-        for t in r.json()['tracks']['items']:
+        return r.json()['tracks']['items']
+
+    for track in Track.objects.filter(spotify_uri=None)[:100]:
+        print(track.artist.name, ' - ', track.name)
+        items = search(track.artist.name, track.name)
+        if not items:
+            items = search(track.artist.name.replace(' and ', '&'), track.name)
+        if not items and ' and ' in track.artist.name:
+            items = search(track.artist.name.partition(' and ')[0], track.name)
+        for t in items:
             if t['artists'][0]['name'].lower() != track.artist.name.lower():
                 continue
             track.spotify_uri = t['uri']
             track.spotify_url = t['href']
             track.save()
+            print('     FOUND!')
             break
 
 
