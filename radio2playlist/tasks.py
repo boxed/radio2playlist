@@ -79,22 +79,35 @@ def backfill_spotify_ids():
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json',
     }
-
     def search(artist_name, track_name):
         search_string = f'artist:"{artist_name}" track:"{sanitize(track_name)}"'
         r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(search_string)}', headers=headers)
-        return r.json()['tracks']['items']
-
-    for track in Track.objects.filter(spotify_uri=None)[:100]:
-        print(track.artist.name, ' - ', track.name)
-        items = search(track.artist.name, track.name)
+        try:
+            return r.json()['tracks']['items']
+        except KeyError:
+            return []
+    def search_freetext(artist_name, track_name):
+        search_string = f'{artist_name} {sanitize(track_name)}'
+        r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(search_string)}', headers=headers)
+        try:
+            return r.json()['tracks']['items']
+        except KeyError:
+            return []
+    for track in Track.objects.filter(spotify_uri=None)[:10]:
+        artist_name = track.artist.name
+        if artist_name == 'Pink' or artist_name.startswith('Pink '):
+            artist_name = artist_name.replace('Pink', 'P!ink')
+        print(artist_name, ' - ', track.name)
+        items = search(artist_name, track.name)
         if not items:
-            items = search(track.artist.name.replace(' and ', '&'), track.name)
+            items = search(artist_name.replace(' and ', '&'), track.name)
         if not items and ' and ' in track.artist.name:
-            items = search(track.artist.name.partition(' and ')[0], track.name)
+            items = search(artist_name.partition(' and ')[0], track.name)
+        if not items and ' and ' in track.artist.name:
+            items = search(artist_name.partition(' and ')[-1], track.name)
+        if not items:
+            items = search_freetext(artist_name, track.name)
         for t in items:
-            if t['artists'][0]['name'].lower() != track.artist.name.lower():
-                continue
             track.spotify_uri = t['uri']
             track.spotify_url = t['href']
             track.save()
