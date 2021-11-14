@@ -11,6 +11,7 @@ from radio2playlist.models import (
     PlaylistItem,
     Show,
     Station,
+    Track,
 )
 
 urlpatterns = [
@@ -36,6 +37,11 @@ urlpatterns = [
         auto__include=['track__artist', 'track'],
         rows=lambda request, **_: request.url_params['playlist'].songs.all().order_by('start_time'),
     ).as_view()),
+
+    decoded_path('without_spotify_uri/', Table(
+        auto__rows=Track.objects.filter(spotify_uri=None),
+        auto__include=['artist', 'name'],
+    )),
 
     path('admin/', include(Admin.urls())),
 ]
