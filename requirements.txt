@@ -5,3 +5,4 @@ httpx
 mysqlclient
 gunicorn
 sentry-sdk
+ipython

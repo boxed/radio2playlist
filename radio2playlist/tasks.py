@@ -1,13 +1,11 @@
 import os
 from urllib.parse import (
     quote_plus,
-    urlencode,
 )
 
 import httpx
 
 if __name__ == '__main__':
-    import os
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'radio2playlist.settings')
     import django
     django.setup()
@@ -24,6 +22,12 @@ from radio2playlist.models import (
 
 SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/api/token'
 SPOTIFY_API_URL = 'https://api.spotify.com/v1/'
+
+replacements = {
+    ('Kenny Loggins', 'Dangerzone'): ('Kenny Loggins', 'Danger zone'),
+    ('Pink and Willow Sage Hart', 'Cover Me In Sunshine'): ('Pink', 'Cover Me In Sunshine'),
+    ('Meat Loaf ( ) Cher', 'Dead Ringer For Love'): ('Meat loaf', 'Dead Ringer For Love'),
+}
 
 
 def scrape():
@@ -67,37 +71,50 @@ def sanitize(name):
     return name.replace("'", '').replace('´', '')
 
 
-def backfill_spotify_ids():
+def get_access_token():
     auth_response = httpx.post(SPOTIFY_AUTH_URL, data={
         'grant_type': 'client_credentials',
         'client_id': os.environ['DOKKU_SPOTIFY_CLIENT_ID'],
         'client_secret': os.environ['DOKKU_SPOTIFY_SECRET'],
     })
     auth_response_data = auth_response.json()
-    access_token = auth_response_data['access_token']
+    return auth_response_data['access_token']
+
+
+def spotify_search(access_token, q):
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json',
     }
+
+    r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(q)}', headers=headers)
+    try:
+        return r.json()['tracks']['items']
+    except KeyError:
+        return []
+
+
+def backfill_spotify_ids():
+    access_token = get_access_token()
+
     def search(artist_name, track_name):
         search_string = f'artist:"{artist_name}" track:"{sanitize(track_name)}"'
-        r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(search_string)}', headers=headers)
-        try:
-            return r.json()['tracks']['items']
-        except KeyError:
-            return []
+        return spotify_search(access_token, search_string)
+
     def search_freetext(artist_name, track_name):
         search_string = f'{artist_name} {sanitize(track_name)}'
-        r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(search_string)}', headers=headers)
-        try:
-            return r.json()['tracks']['items']
-        except KeyError:
-            return []
+        return spotify_search(access_token, search_string)
+
     for track in Track.objects.filter(spotify_uri=None)[:10]:
         artist_name = track.artist.name
         if artist_name == 'Pink' or artist_name.startswith('Pink '):
             artist_name = artist_name.replace('Pink', 'P!ink')
+
         print(artist_name, ' - ', track.name)
+
+        if (artist_name, track.name) in replacements:
+            artist_name, track.name = replacements[(artist_name, track.name)]
+
         items = search(artist_name, track.name)
         if not items:
             items = search(artist_name.replace(' and ', '&'), track.name)
