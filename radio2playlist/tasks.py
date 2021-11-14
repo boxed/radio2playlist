@@ -27,6 +27,7 @@ replacements = {
     ('Kenny Loggins', 'Dangerzone'): ('Kenny Loggins', 'Danger zone'),
     ('Pink and Willow Sage Hart', 'Cover Me In Sunshine'): ('Pink', 'Cover Me In Sunshine'),
     ('Meat Loaf ( ) Cher', 'Dead Ringer For Love'): ('Meat loaf', 'Dead Ringer For Love'),
+    ('Abba', 'Dreamworld'): ('Abba', 'Dream world'),
 }
 
 
@@ -86,7 +87,7 @@ def spotify_search(access_token, q):
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json',
     }
-
+    print(f'   {q}')
     r = httpx.get(f'{SPOTIFY_API_URL}search?type=track&q={quote_plus(q)}', headers=headers)
     try:
         return r.json()['tracks']['items']
@@ -105,10 +106,10 @@ def backfill_spotify_ids():
         search_string = f'{artist_name} {sanitize(track_name)}'
         return spotify_search(access_token, search_string)
 
-    for track in Track.objects.filter(spotify_uri=None)[:10]:
+    for track in Track.objects.filter(spotify_uri=None).order_by('?')[:10]:
         artist_name = track.artist.name
         if artist_name == 'Pink' or artist_name.startswith('Pink '):
-            artist_name = artist_name.replace('Pink', 'P!ink')
+            artist_name = artist_name.replace('Pink', 'P!nk')
 
         print(artist_name, ' - ', track.name)
 
@@ -116,7 +117,7 @@ def backfill_spotify_ids():
             artist_name, track.name = replacements[(artist_name, track.name)]
 
         items = search(artist_name, track.name)
-        if not items:
+        if not items and ' and ' in track.artist.name:
             items = search(artist_name.replace(' and ', '&'), track.name)
         if not items and ' and ' in track.artist.name:
             items = search(artist_name.partition(' and ')[0], track.name)
