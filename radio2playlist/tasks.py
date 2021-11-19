@@ -28,6 +28,8 @@ replacements = {
     ('Pink and Willow Sage Hart', 'Cover Me In Sunshine'): ('Pink', 'Cover Me In Sunshine'),
     ('Meat Loaf ( ) Cher', 'Dead Ringer For Love'): ('Meat loaf', 'Dead Ringer For Love'),
     ('Abba', 'Dreamworld'): ('Abba', 'Dream world'),
+    ('Ulf Lundell', 'Jag vill ha dig'): ('Ulf Lundell', 'Jag vill ha dej'),
+    ('Timbuktu', 'Alla Vill Till Himlen Men Ingen Vill Dö'): ('Timbuktu', 'Alla Vill Till himmelen Men Ingen Vill Dö')
 }
 
 
@@ -123,6 +125,8 @@ def backfill_spotify_ids():
             items = search(artist_name.partition(' and ')[0], track.name)
         if not items and ' and ' in track.artist.name:
             items = search(artist_name.partition(' and ')[-1], track.name)
+        if not items and ' ft. ' in track.artist.name:
+            items = search(artist_name.partition(' ft. ')[-1], track.name)
         if not items:
             items = search_freetext(artist_name, track.name)
         for t in items:
