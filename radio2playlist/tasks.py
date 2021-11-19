@@ -111,7 +111,7 @@ def backfill_spotify_ids():
         search_string = f'{artist_name} {sanitize(track_name)}'
         return spotify_search(access_token, search_string)
 
-    for track in Track.objects.filter(spotify_uri=None).order_by('?')[:100]:
+    for track in Track.objects.filter(spotify_uri=None).order_by('?')[:10]:
         artist_name = track.artist.name
         if artist_name == 'Pink' or artist_name.startswith('Pink '):
             artist_name = artist_name.replace('Pink', 'P!nk')
