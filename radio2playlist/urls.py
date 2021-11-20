@@ -43,5 +43,10 @@ urlpatterns = [
         auto__include=['artist', 'name'],
     )),
 
+    decoded_path('without_spotify_url/', Table(
+        auto__rows=Track.objects.filter(spotify_url=None),
+        auto__include=['artist', 'name'],
+    )),
+
     path('admin/', include(Admin.urls())),
 ]
