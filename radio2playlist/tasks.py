@@ -116,6 +116,9 @@ def backfill_spotify_ids():
         if artist_name == 'Pink' or artist_name.startswith('Pink '):
             artist_name = artist_name.replace('Pink', 'P!nk')
 
+        if track.name.endswith('-3.00'):
+            track.name = track.name[-len('-3.00')]
+
         print(artist_name, ' - ', track.name)
 
         if (artist_name, track.name) in replacements:
